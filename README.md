@@ -53,11 +53,10 @@ WorkEase/ │── backend/ │
                        ├── controllers/   
                        ├── middleware/  
                        └── server.js 
-
           │── frontend/ │    
                         ├── index.html 
                         ├── login.html 
-                        ├── signup.html s
+                        ├── signup.html 
                         ├── admin.html 
                         ├── user.html 
                         ├── worker.html   
