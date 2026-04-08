@@ -47,22 +47,48 @@ WorkEase provides a centralized platform where:
 ---
 
 ## 📁 Project Structure
-WorkEase/ │── backend/ │
-                       ├── models/  
-                       ├── routes/  
-                       ├── controllers/   
-                       ├── middleware/  
-                       └── server.js 
-          │── frontend/ │    
-                        ├── index.html 
-                        ├── login.html 
-                        ├── signup.html 
-                        ├── admin.html 
-                        ├── user.html 
-                        ├── worker.html   
-                        └── style.css
-
----
+WorkEase/
+│
+├── backend/
+│   ├── models/
+│   │   ├── User.js
+│   │   ├── Worker.js
+│   │   ├── Booking.js
+│   │   └── Feedback.js
+│   │
+│   ├── routes/
+│   │   ├── authRoutes.js
+│   │   ├── userRoutes.js
+│   │   ├── workerRoutes.js
+│   │   └── adminRoutes.js
+│   │
+│   ├── controllers/
+│   │   ├── authController.js
+│   │   ├── userController.js
+│   │   ├── workerController.js
+│   │   └── adminController.js
+│   │
+│   ├── middleware/
+│   │   └── verifyToken.js
+│   │
+│   ├── config/
+│   │   └── db.js
+│   │
+│   └── server.js
+│
+├── frontend/
+│   ├── index.html
+│   ├── login.html
+│   ├── signup.html
+│   ├── admin.html
+│   ├── user.html
+│   ├── worker.html
+│   ├── style.css
+│   └── script.js
+│
+├── package.json
+├── package-lock.json
+└── README.md
 
 ## ⚙️ Installation & Setup
 
