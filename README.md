@@ -48,12 +48,20 @@ WorkEase provides a centralized platform where:
 
 ## 📁 Project Structure
 WorkEase/ │── backend/ │
-                       ├── models/ │   
-          ├── routes/ │   
-          ├── controllers/ │   
-          ├── middleware/ │   
-          └── server.js │ 
-│── frontend/ │   ├── index.html │   ├── login.html │   ├── signup.html │   ├── admin.html │   ├── user.html │   ├── worker.html │   └── style.css
+                       ├── models/  
+                       ├── routes/  
+                       ├── controllers/   
+                       ├── middleware/  
+                       └── server.js 
+
+          │── frontend/ │    
+                        ├── index.html 
+                        ├── login.html 
+                        ├── signup.html s
+                        ├── admin.html 
+                        ├── user.html 
+                        ├── worker.html   
+                        └── style.css
 
 ---
 
