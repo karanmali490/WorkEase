@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WorkerOS — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  :root,[data-theme="light"] {
+    --bg:#f0f4ff;--surface:#ffffff;--surface2:#f1f5fb;--surface3:#e4ecf8;
+    --accent:#2563eb;--accent2:#0891b2;--accent3:#7c3aed;
+    --success:#059669;--warning:#d97706;--danger:#dc2626;
+    --text:#0f172a;--text-muted:#94a3b8;--text-dim:#475569;
+    --border:rgba(0,0,0,0.09);--shadow:0 4px 20px rgba(0,0,0,0.07);
+    --modal-bg:#ffffff;--toggle-bg:#e2e8f0;--radius:16px;
+    --sidebar-w:260px;--transition:0.25s cubic-bezier(0.4,0,0.2,1);
+  }
+  [data-theme="dark"] {
+    --bg:#0b0f1a;--surface:#111827;--surface2:#1a2235;--surface3:#1f2d42;
+    --accent:#3b82f6;--accent2:#06b6d4;--accent3:#8b5cf6;
+    --success:#10b981;--warning:#f59e0b;--danger:#ef4444;
+    --text:#f1f5f9;--text-muted:#64748b;--text-dim:#94a3b8;
+    --border:rgba(255,255,255,0.07);--shadow:0 4px 20px rgba(0,0,0,0.3);
+    --modal-bg:#111827;--toggle-bg:#1a2235;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;transition:background 0.3s,color 0.3s}
+  [data-theme="dark"] body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height:600px;background:radial-gradient(circle,rgba(59,130,246,0.07) 0%,transparent 70%);pointer-events:none;z-index:0}
+  .layout{display:flex;height:100vh;position:relative;z-index:1}
+
+  /* SIDEBAR */
+  .sidebar{width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:24px 16px;position:relative;flex-shrink:0;overflow:hidden;transition:background 0.3s,border-color 0.3s}
+  [data-theme="dark"] .sidebar::before{content:'';position:absolute;bottom:-100px;left:-60px;width:280px;height:280px;background:radial-gradient(circle,rgba(59,130,246,0.06) 0%,transparent 70%);pointer-events:none}
+  .brand{display:flex;align-items:center;gap:12px;padding:8px 12px 28px;border-bottom:1px solid var(--border);margin-bottom:20px}
+  .brand-icon{width:38px;height:38px;background:linear-gradient(135deg,var(--accent),var(--accent3));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;color:white;box-shadow:0 0 18px rgba(37,99,235,0.25);flex-shrink:0}
+  .brand-name{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;letter-spacing:-0.5px;background:linear-gradient(135deg,var(--text),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .brand-sub{font-size:10px;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;margin-top:1px}
+  .nav-section{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);padding:0 12px;margin:8px 0 6px}
+  .nav-item{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:12px;cursor:pointer;color:var(--text-dim);font-size:14px;font-weight:500;transition:var(--transition);position:relative;margin-bottom:2px;text-decoration:none;border:1px solid transparent;user-select:none}
+  .nav-item i{width:18px;text-align:center;font-size:14px;transition:var(--transition)}
+  .nav-item:hover{background:var(--surface2);color:var(--text);border-color:var(--border)}
+  .nav-item.active{background:linear-gradient(135deg,rgba(37,99,235,0.1),rgba(124,58,237,0.06));color:var(--text);border-color:rgba(37,99,235,0.18)}
+  .nav-item.active i{color:var(--accent)}
+  .nav-item.active::before{content:'';position:absolute;left:0;top:20%;height:60%;width:3px;background:linear-gradient(180deg,var(--accent),var(--accent3));border-radius:0 3px 3px 0}
+  .nav-badge{margin-left:auto;background:var(--accent);color:white;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;min-width:20px;text-align:center}
+  .sidebar-footer{margin-top:auto;padding-top:16px;border-top:1px solid var(--border)}
+  .worker-card{display:flex;align-items:center;gap:12px;padding:12px;background:var(--surface2);border-radius:12px;border:1px solid var(--border);margin-bottom:10px;transition:background 0.3s}
+  .worker-avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent3));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:white;flex-shrink:0}
+  .worker-info{flex:1;min-width:0}
+  .worker-name{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .worker-role{font-size:11px;color:var(--text-muted)}
+  .online-dot{width:8px;height:8px;background:var(--success);border-radius:50%;box-shadow:0 0 6px var(--success);animation:blink 2s infinite;flex-shrink:0}
+  @keyframes blink{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.6;transform:scale(0.85)}}
+  .logout-btn{display:flex;align-items:center;gap:10px;width:100%;padding:11px 14px;border-radius:12px;cursor:pointer;color:var(--text-muted);font-size:13px;font-weight:500;background:none;border:1px solid transparent;transition:var(--transition);font-family:'DM Sans',sans-serif}
+  .logout-btn:hover{background:rgba(220,38,38,0.08);color:var(--danger);border-color:rgba(220,38,38,0.18)}
+
+  /* MAIN */
+  .main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 28px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;transition:background 0.3s,border-color 0.3s}
+  .topbar-left{display:flex;flex-direction:column}
+  .topbar-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;letter-spacing:-0.5px;color:var(--text)}
+  .topbar-date{font-size:12px;color:var(--text-muted);margin-top:2px}
+  .topbar-right{display:flex;align-items:center;gap:12px}
+  .topbar-btn{width:38px;height:38px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--text-dim);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:var(--transition)}
+  .topbar-btn:hover{border-color:rgba(37,99,235,0.3);color:var(--accent);background:rgba(37,99,235,0.07)}
+  .theme-toggle{display:flex;align-items:center;gap:8px;padding:6px 14px;border-radius:30px;border:1px solid var(--border);background:var(--toggle-bg);cursor:pointer;transition:var(--transition);font-size:12px;font-weight:600;color:var(--text-dim);font-family:'DM Sans',sans-serif}
+  .theme-toggle:hover{border-color:rgba(37,99,235,0.35);color:var(--accent)}
+  .toggle-track{width:34px;height:18px;background:var(--surface3);border-radius:20px;position:relative;transition:background 0.3s}
+  [data-theme="light"] .toggle-track{background:var(--accent)}
+  .toggle-knob{position:absolute;top:3px;left:3px;width:12px;height:12px;background:white;border-radius:50%;transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);box-shadow:0 1px 3px rgba(0,0,0,0.3)}
+  [data-theme="light"] .toggle-knob{transform:translateX(16px)}
+  .content{flex:1;overflow-y:auto;padding:28px;background:var(--bg);transition:background 0.3s}
+  .content::-webkit-scrollbar{width:5px}
+  .content::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:10px}
+  .page{display:none}
+  .page.active{display:block;animation:fadeIn 0.3s ease}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  .section-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:24px}
+  .section-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;letter-spacing:-0.5px;color:var(--text)}
+  .section-subtitle{font-size:13px;color:var(--text-muted);margin-top:3px}
+
+  /* STATS */
+  .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;position:relative;overflow:hidden;transition:background 0.3s,border-color 0.2s,transform 0.2s,box-shadow 0.2s;box-shadow:var(--shadow)}
+  .stat-card:hover{border-color:rgba(37,99,235,0.25);transform:translateY(-2px);box-shadow:0 8px 28px rgba(37,99,235,0.1)}
+  .stat-card::after{content:'';position:absolute;top:0;right:0;width:80px;height:80px;border-radius:0 var(--radius) 0 80px;opacity:0.07}
+  .stat-card.blue::after{background:var(--accent)}.stat-card.cyan::after{background:var(--accent2)}.stat-card.purple::after{background:var(--accent3)}.stat-card.green::after{background:var(--success)}
+  .stat-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:14px}
+  .stat-card.blue .stat-icon{background:rgba(37,99,235,0.1);color:var(--accent)}.stat-card.cyan .stat-icon{background:rgba(8,145,178,0.1);color:var(--accent2)}.stat-card.purple .stat-icon{background:rgba(124,58,237,0.1);color:var(--accent3)}.stat-card.green .stat-icon{background:rgba(5,150,105,0.1);color:var(--success)}
+  .stat-value{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;letter-spacing:-1px;line-height:1;margin-bottom:4px;color:var(--text)}
+  .stat-label{font-size:12px;color:var(--text-muted);font-weight:500}
+  .stat-trend{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;margin-top:8px;padding:3px 8px;border-radius:20px}
+  .stat-trend.up{background:rgba(5,150,105,0.1);color:var(--success)}.stat-trend.neutral{background:rgba(100,116,139,0.1);color:var(--text-muted)}
+
+  /* CHART */
+  .chart-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:24px;box-shadow:var(--shadow);transition:background 0.3s,border-color 0.3s}
+  .chart-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+  .chart-title{font-size:15px;font-weight:600;color:var(--text)}.chart-subtitle{font-size:12px;color:var(--text-muted);margin-top:2px}
+  .chart-pills{display:flex;gap:6px}
+  .chart-pill{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:none;color:var(--text-muted);transition:var(--transition);font-family:'DM Sans',sans-serif}
+  .chart-pill.active{background:var(--accent);color:white;border-color:var(--accent)}.chart-pill:hover:not(.active){background:var(--surface2);color:var(--text)}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+  .activity-item{display:flex;align-items:flex-start;gap:14px;padding:14px 0;border-bottom:1px solid var(--border)}
+  .activity-item:last-child{border-bottom:none;padding-bottom:0}
+  .activity-dot{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;margin-top:2px}
+  .activity-dot.success{background:rgba(5,150,105,0.12);color:var(--success)}.activity-dot.blue{background:rgba(37,99,235,0.12);color:var(--accent)}.activity-dot.warning{background:rgba(217,119,6,0.12);color:var(--warning)}
+  .activity-text{font-size:13px;font-weight:500;color:var(--text)}.activity-meta{font-size:11px;color:var(--text-muted);margin-top:3px}
+
+  /* JOB CARDS */
+  .jobs-grid{display:flex;flex-direction:column;gap:14px}
+  .job-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px;display:grid;grid-template-columns:1fr auto;gap:16px;align-items:start;transition:background 0.3s,border-color 0.2s,transform 0.2s;box-shadow:var(--shadow)}
+  .job-card:hover{border-color:rgba(37,99,235,0.25);background:var(--surface2);transform:translateY(-1px)}
+  .job-header{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+  .job-type-badge{padding:4px 10px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;background:rgba(37,99,235,0.1);color:var(--accent);border:1px solid rgba(37,99,235,0.18)}
+  .job-id{font-size:11px;color:var(--text-muted);font-weight:500;margin-left:auto}
+  .job-title{font-size:15px;font-weight:600;margin-bottom:10px;color:var(--text)}
+  .contact-row{display:flex;align-items:center;background:linear-gradient(135deg,rgba(37,99,235,0.07),rgba(124,58,237,0.05));border:1px solid rgba(37,99,235,0.12);border-radius:10px;padding:10px 14px;margin-bottom:12px;flex-wrap:wrap;gap:14px}
+  .contact-item{display:flex;align-items:center;gap:7px}
+  .contact-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+  .contact-icon.phone{background:rgba(5,150,105,0.12);color:var(--success)}.contact-icon.email{background:rgba(37,99,235,0.1);color:var(--accent)}.contact-icon.person{background:rgba(124,58,237,0.1);color:var(--accent3)}
+  .contact-label{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px}
+  .contact-value{font-size:13px;font-weight:600;color:var(--text)}
+  .phone-highlight{font-size:14px!important;font-weight:700!important;color:var(--success)!important;letter-spacing:0.3px}
+  .job-detail{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text-dim);margin-bottom:6px}
+  .job-detail i{width:14px;text-align:center;color:var(--text-muted);font-size:11px}
+  .job-meta{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+  .job-tag{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-muted);background:var(--surface3);padding:4px 10px;border-radius:6px;border:1px solid var(--border)}
+  .job-actions{display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+  .btn-complete{display:flex;align-items:center;gap:8px;padding:10px 18px;background:linear-gradient(135deg,var(--accent),var(--accent3));color:white;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;transition:var(--transition);font-family:'DM Sans',sans-serif;white-space:nowrap;box-shadow:0 4px 14px rgba(37,99,235,0.25)}
+  .btn-complete:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(37,99,235,0.35)}
+  .priority-badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:0.5px;text-transform:uppercase}
+  .priority-high{background:rgba(220,38,38,0.1);color:var(--danger);border:1px solid rgba(220,38,38,0.18)}.priority-medium{background:rgba(217,119,6,0.1);color:var(--warning);border:1px solid rgba(217,119,6,0.18)}.priority-low{background:rgba(5,150,105,0.1);color:var(--success);border:1px solid rgba(5,150,105,0.18)}
+
+  /* COMPLETED */
+  .completed-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:14px;transition:background 0.3s,border-color 0.2s;box-shadow:var(--shadow)}
+  .completed-card:hover{border-color:rgba(5,150,105,0.22)}
+  .completed-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;gap:12px}
+  .completed-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--success);background:rgba(5,150,105,0.1);padding:4px 12px;border-radius:20px;border:1px solid rgba(5,150,105,0.2);margin-top:6px}
+  .cost-highlight{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--success)}
+  .completed-desc{background:var(--surface2);border-radius:10px;padding:12px;border:1px solid var(--border);font-size:13px;color:var(--text-dim);line-height:1.6;transition:background 0.3s}
+
+  /* PROFILE */
+  .profile-hero{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:32px;display:flex;align-items:center;gap:24px;margin-bottom:20px;position:relative;overflow:hidden;box-shadow:var(--shadow);transition:background 0.3s}
+  [data-theme="dark"] .profile-hero::before{content:'';position:absolute;top:-50px;right:-50px;width:200px;height:200px;background:radial-gradient(circle,rgba(59,130,246,0.1) 0%,transparent 70%)}
+  .profile-avatar-wrap{position:relative;flex-shrink:0}
+  .profile-avatar{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent3));display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:white;border:3px solid var(--border)}
+  .profile-status{position:absolute;bottom:3px;right:3px;width:16px;height:16px;background:var(--success);border-radius:50%;border:2.5px solid var(--surface);box-shadow:0 0 8px var(--success)}
+  .profile-name{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;letter-spacing:-0.5px;margin-bottom:4px;color:var(--text)}
+  .profile-role-txt{font-size:13px;color:var(--text-muted);margin-bottom:14px}
+  .profile-chips{display:flex;gap:8px;flex-wrap:wrap}
+  .profile-chip{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-dim);background:var(--surface2);padding:5px 12px;border-radius:8px;border:1px solid var(--border);transition:background 0.3s}
+  .profile-chip i{color:var(--accent);font-size:11px}
+  .profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .profile-field{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;box-shadow:var(--shadow);transition:background 0.3s}
+  .profile-field-label{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px}
+  .profile-field-value{font-size:15px;font-weight:600;color:var(--text)}
+
+  /* ======= MODAL ======= */
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:1000;align-items:center;justify-content:center}
+  .modal-overlay.open{display:flex}
+  .modal-box{background:var(--modal-bg);border:1px solid var(--border);border-radius:20px;padding:28px;width:460px;max-width:95vw;box-shadow:0 24px 60px rgba(0,0,0,0.2);animation:modalIn 0.3s cubic-bezier(0.34,1.56,0.64,1);transition:background 0.3s}
+  @keyframes modalIn{from{opacity:0;transform:scale(0.9) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+  .modal-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;margin-bottom:6px;color:var(--text)}
+  .modal-subtitle{font-size:13px;color:var(--text-muted);margin-bottom:22px}
+  .form-group{margin-bottom:16px}
+  .form-label{font-size:12px;font-weight:600;color:var(--text-dim);letter-spacing:0.3px;display:block;margin-bottom:8px}
+  .form-control{width:100%;padding:11px 14px;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;transition:border-color 0.2s,box-shadow 0.2s,background 0.3s;outline:none;resize:none}
+  .form-control:focus{border-color:rgba(37,99,235,0.45);background:var(--surface3);box-shadow:0 0 0 3px rgba(37,99,235,0.07)}
+  .form-control::placeholder{color:var(--text-muted)}
+  .form-control.input-error{border-color:#dc2626!important;background:rgba(220,38,38,0.05)!important;box-shadow:0 0 0 3px rgba(220,38,38,0.1)!important}
+  [data-theme="light"] input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.4)}
+
+  /* ======= DATE OPTION BUTTONS ======= */
+  .date-options{display:flex;gap:8px;margin-bottom:8px}
+
+  .date-opt-btn{
+    flex:1; padding:12px 6px; border-radius:12px;
+    border:1.5px solid var(--border); background:var(--surface2);
+    color:var(--text-dim); font-family:'DM Sans',sans-serif;
+    font-size:13px; font-weight:600; cursor:pointer;
+    transition:var(--transition); text-align:center; line-height:1.3;
+  }
+  .date-opt-btn:hover{border-color:rgba(37,99,235,0.4);color:var(--accent);background:rgba(37,99,235,0.06)}
+  .date-opt-btn.selected{background:linear-gradient(135deg,var(--accent),var(--accent3));color:white;border-color:transparent;box-shadow:0 4px 14px rgba(37,99,235,0.3)}
+  .date-opt-btn .opt-day{display:block;font-size:13px;font-weight:700}
+  .date-opt-btn .opt-date{display:block;font-size:11px;margin-top:2px;opacity:0.75;font-weight:400}
+  .date-opt-btn.selected .opt-date{opacity:0.85}
+
+  /* ======= INLINE ERROR ======= */
+  .field-error-msg{
+    display:none; align-items:center; gap:6px;
+    font-size:12px; font-weight:600; color:#dc2626;
+    margin-top:7px; padding:8px 12px;
+    background:rgba(220,38,38,0.06);
+    border-radius:8px; border:1px solid rgba(220,38,38,0.2);
+  }
+  .field-error-msg.show{display:flex}
+  .field-error-msg i{font-size:12px;flex-shrink:0}
+
+  .modal-footer{display:flex;gap:10px;margin-top:22px}
+  .btn-cancel{flex:1;padding:11px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text-muted);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:var(--transition)}
+  .btn-cancel:hover{border-color:rgba(220,38,38,0.3);color:var(--danger)}
+  .btn-submit{flex:2;padding:11px;background:linear-gradient(135deg,var(--accent),var(--accent3));border:none;border-radius:10px;color:white;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:var(--transition);display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 14px rgba(37,99,235,0.22)}
+  .btn-submit:hover{box-shadow:0 6px 20px rgba(37,99,235,0.32);transform:translateY(-1px)}
+  .btn-submit:disabled{opacity:0.6;cursor:not-allowed;transform:none}
+
+  .empty-state{text-align:center;padding:60px 20px}
+  .empty-icon{font-size:48px;margin-bottom:16px;opacity:0.2}
+  .empty-title{font-size:16px;font-weight:600;margin-bottom:6px;color:var(--text)}
+  .empty-text{font-size:13px;color:var(--text-muted)}
+
+  .toast-container{position:fixed;top:20px;right:20px;z-index:9000;display:flex;flex-direction:column;gap:10px}
+  .toast{display:flex;align-items:center;gap:12px;padding:14px 18px;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.12);animation:slideIn 0.3s ease,slideOut 0.3s ease 2.7s forwards;min-width:260px;max-width:360px}
+  .toast.success{border-left:3px solid var(--success)}.toast.error{border-left:3px solid var(--danger)}
+  @keyframes slideIn{from{opacity:0;transform:translateX(100%)}to{opacity:1;transform:translateX(0)}}
+  @keyframes slideOut{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(100%)}}
+  .toast-icon{font-size:16px}
+  .toast.success .toast-icon{color:var(--success)}.toast.error .toast-icon{color:var(--danger)}
+  .toast-msg{font-size:13px;font-weight:500;color:var(--text)}
+
+  *{scrollbar-width:thin;scrollbar-color:var(--surface3) transparent}
+  *::-webkit-scrollbar{width:4px}
+  *::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:10px}
+
+  @media(max-width:1100px){.stats-grid{grid-template-columns:repeat(2,1fr)}.two-col{grid-template-columns:1fr}}
+  @media(max-width:768px){.sidebar{width:64px;padding:16px 8px}.brand-name,.brand-sub,.nav-item span,.worker-info,.logout-btn span{display:none}.stats-grid{grid-template-columns:repeat(2,1fr)}.job-card{grid-template-columns:1fr}.profile-grid{grid-template-columns:1fr}.profile-hero{flex-direction:column;text-align:center}.profile-chips{justify-content:center}.toggle-label{display:none}.contact-row{flex-direction:column;gap:8px}.date-options{gap:6px}}
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="brand">
+      <div class="brand-icon"><i class="fas fa-hard-hat"></i></div>
+      <div><div class="brand-name">WorkerOS</div><div class="brand-sub">Field Panel</div></div>
+    </div>
+    <div class="nav-section">Main</div>
+    <a class="nav-item active" onclick="showPage('dashboard',this)"><i class="fas fa-chart-pie"></i><span>Dashboard</span></a>
+    <a class="nav-item" onclick="showPage('jobs',this)"><i class="fas fa-briefcase"></i><span>Assigned Jobs</span><span class="nav-badge" id="jobsCount">0</span></a>
+    <a class="nav-item" onclick="showPage('completed',this)"><i class="fas fa-circle-check"></i><span>Completed</span></a>
+    <div class="nav-section">Account</div>
+    <a class="nav-item" onclick="showPage('profile',this)"><i class="fas fa-user-circle"></i><span>My Profile</span></a>
+    <div class="sidebar-footer">
+      <div class="worker-card">
+        <div class="worker-avatar" id="sidebarAvatar">W</div>
+        <div class="worker-info"><div class="worker-name" id="sidebarName">Worker</div><div class="worker-role" id="sidebarRole">Field Agent</div></div>
+        <div class="online-dot"></div>
+      </div>
+      <button class="logout-btn" onclick="logout()"><i class="fas fa-arrow-right-from-bracket"></i><span>Logout</span></button>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="topbar-title" id="topbarTitle">Dashboard</div>
+        <div class="topbar-date"  id="topbarDate"></div>
+      </div>
+      <div class="topbar-right">
+        <button class="theme-toggle" onclick="toggleTheme()">
+          <span id="toggleIcon">☀️</span>
+          <div class="toggle-track"><div class="toggle-knob"></div></div>
+          <span class="toggle-label" id="toggleLabel">Light</span>
+        </button>
+        <button class="topbar-btn" onclick="refreshCurrent()"><i class="fas fa-rotate-right"></i></button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div class="page active" id="dashboardPage">
+        <div class="section-header"><div><div class="section-title">Overview</div><div class="section-subtitle">Your performance at a glance</div></div></div>
+        <div class="stats-grid">
+          <div class="stat-card blue"><div class="stat-icon"><i class="fas fa-briefcase"></i></div><div class="stat-value" id="statAssigned">—</div><div class="stat-label">Active Jobs</div><div class="stat-trend neutral"><i class="fas fa-minus"></i> Loading...</div></div>
+          <div class="stat-card green"><div class="stat-icon"><i class="fas fa-circle-check"></i></div><div class="stat-value" id="statCompleted">—</div><div class="stat-label">Completed</div><div class="stat-trend up"><i class="fas fa-arrow-up"></i> This month</div></div>
+          <div class="stat-card cyan"><div class="stat-icon"><i class="fas fa-indian-rupee-sign"></i></div><div class="stat-value" id="statEarnings">—</div><div class="stat-label">Total Earnings</div><div class="stat-trend up"><i class="fas fa-arrow-up"></i> All time</div></div>
+          <div class="stat-card purple"><div class="stat-icon"><i class="fas fa-star"></i></div><div class="stat-value" id="statRate">—</div><div class="stat-label">Completion Rate</div><div class="stat-trend up"><i class="fas fa-arrow-up"></i> Great work!</div></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header">
+            <div><div class="chart-title">Monthly Earnings</div><div class="chart-subtitle">Revenue breakdown per month</div></div>
+            <div class="chart-pills">
+              <button class="chart-pill active" onclick="setChartType('line',this)">Line</button>
+              <button class="chart-pill"        onclick="setChartType('bar',this)">Bar</button>
+            </div>
+          </div>
+          <canvas id="earningsChart" height="90"></canvas>
+        </div>
+        <div class="two-col">
+          <div class="chart-card" style="margin-bottom:0">
+            <div class="chart-header" style="margin-bottom:14px"><div><div class="chart-title">Recent Activity</div><div class="chart-subtitle">Latest job updates</div></div></div>
+            <div id="activityList"><div style="text-align:center;padding:30px;color:var(--text-muted);font-size:13px">Loading...</div></div>
+          </div>
+          <div class="chart-card" style="margin-bottom:0">
+            <div class="chart-header" style="margin-bottom:14px"><div><div class="chart-title">Job Distribution</div><div class="chart-subtitle">Status breakdown</div></div></div>
+            <canvas id="donutChart" height="140"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- JOBS -->
+      <div class="page" id="jobsPage">
+        <div class="section-header"><div><div class="section-title">Assigned Jobs</div><div class="section-subtitle" id="jobsSubtitle">Loading jobs...</div></div></div>
+        <div class="jobs-grid" id="jobsList"></div>
+      </div>
+
+      <!-- COMPLETED -->
+      <div class="page" id="completedPage">
+        <div class="section-header"><div><div class="section-title">Completed Work</div><div class="section-subtitle" id="completedSubtitle">Loading records...</div></div></div>
+        <div id="completedList"></div>
+      </div>
+
+      <!-- PROFILE -->
+      <div class="page" id="profilePage">
+        <div class="section-header"><div><div class="section-title">My Profile</div><div class="section-subtitle">Your account information</div></div></div>
+        <div class="profile-hero">
+          <div class="profile-avatar-wrap"><div class="profile-avatar" id="profileAvatar">W</div><div class="profile-status"></div></div>
+          <div>
+            <div class="profile-name" id="profileName">Loading...</div>
+            <div class="profile-role-txt" id="profileRoleText">Field Worker</div>
+            <div class="profile-chips">
+              <div class="profile-chip"><i class="fas fa-circle-check"></i><span id="chipCompleted">0 completed</span></div>
+              <div class="profile-chip"><i class="fas fa-shield-halved"></i> Verified</div>
+              <div class="profile-chip"><i class="fas fa-location-dot"></i> Active</div>
+            </div>
+          </div>
+        </div>
+        <div class="profile-grid">
+          <div class="profile-field"><div class="profile-field-label">Full Name</div><div class="profile-field-value" id="pfName">—</div></div>
+          <div class="profile-field"><div class="profile-field-label">Email Address</div><div class="profile-field-value" id="pfEmail">—</div></div>
+          <div class="profile-field"><div class="profile-field-label">Role</div><div class="profile-field-value" id="pfRole">—</div></div>
+          <div class="profile-field"><div class="profile-field-label">Account Status</div><div class="profile-field-value" style="color:var(--success)">● Active</div></div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /layout -->
+
+<!-- ======= WORK COMPLETION MODAL ======= -->
+<div class="modal-overlay" id="workFormModal">
+  <div class="modal-box">
+    <div class="modal-title">Complete Job</div>
+    <div class="modal-subtitle">Fill in the work completion details below</div>
+
+    <!-- Work Description -->
+    <div class="form-group">
+      <label class="form-label">Work Description <span style="color:#dc2626">*</span></label>
+      <textarea class="form-control" id="workDesc" rows="3"
+                placeholder="Describe what work was done (min 10 characters)..."
+                oninput="clearErr('workDesc')"></textarea>
+      <div class="field-error-msg" id="workDesc-err">
+        <i class="fas fa-circle-exclamation"></i><span></span>
+      </div>
+    </div>
+
+    <!-- Completion Date — 3 button selector ONLY -->
+    <div class="form-group">
+      <label class="form-label">Completion Date <span style="color:#dc2626">*</span></label>
+
+      <div class="date-options">
+        <button class="date-opt-btn" id="optYesterday" onclick="selectDate('yesterday')">
+          <span class="opt-day">Yesterday</span>
+          <span class="opt-date" id="lblYesterday"></span>
+        </button>
+        <button class="date-opt-btn selected" id="optToday" onclick="selectDate('today')">
+          <span class="opt-day">Today</span>
+          <span class="opt-date" id="lblToday"></span>
+        </button>
+        <button class="date-opt-btn" id="optTomorrow" onclick="selectDate('tomorrow')">
+          <span class="opt-day">Tomorrow</span>
+          <span class="opt-date" id="lblTomorrow"></span>
+        </button>
+      </div>
+
+      <!-- Hidden field stores ISO date value sent to API -->
+      <input type="hidden" id="workDate">
+
+      <div class="field-error-msg" id="workDate-err">
+        <i class="fas fa-circle-exclamation"></i><span></span>
+      </div>
+    </div>
+
+    <!-- Cost -->
+    <div class="form-group">
+      <label class="form-label">Cost (₹)</label>
+      <input type="number" class="form-control" id="workCost" placeholder="0" min="0"
+             oninput="clearErr('workCost')">
+      <div class="field-error-msg" id="workCost-err">
+        <i class="fas fa-circle-exclamation"></i><span></span>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeForm()">Cancel</button>
+      <button class="btn-submit" id="submitBtn" onclick="submitWork()">
+        <i class="fas fa-circle-check"></i> Submit Work
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+const API   = "http://localhost:5000/api/auth";
+const token = localStorage.getItem("token");
+
+let currentJobId     = null;
+let chartInstance    = null;
+let donutInstance    = null;
+let currentPage      = 'dashboard';
+let currentChartType = 'line';
+let allJobs          = [];
+let chartData        = [];
+let selectedDateOption = 'today';
+
+/* ============================================================
+   INIT
+   ============================================================ */
+document.getElementById('topbarDate').textContent = new Date().toLocaleDateString('en-IN', {
+  weekday:'long', day:'numeric', month:'long', year:'numeric'
+});
+
+// Populate date button labels and set default hidden value
+(function initDateButtons(){
+  const fmt = d => d.toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
+  const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+  const today     = new Date();
+  const tomorrow  = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+  document.getElementById('lblYesterday').textContent = fmt(yesterday);
+  document.getElementById('lblToday').textContent     = fmt(today);
+  document.getElementById('lblTomorrow').textContent  = fmt(tomorrow);
+  // Default = today
+  document.getElementById('workDate').value = toISO(today);
+})();
+
+const savedTheme = localStorage.getItem('workerTheme');
+if (savedTheme) applyTheme(savedTheme);
+showPage('dashboard');
+
+/* ============================================================
+   DATE HELPERS
+   ============================================================ */
+function toISO(d) {
+  // Returns YYYY-MM-DD in local time (avoids UTC off-by-one)
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+function selectDate(option) {
+  selectedDateOption = option;
+
+  // Highlight selected button
+  ['yesterday','today','tomorrow'].forEach(o => {
+    const btn = document.getElementById('opt' + o.charAt(0).toUpperCase() + o.slice(1));
+    btn.classList.toggle('selected', o === option);
+  });
+
+  // Set hidden ISO date
+  const d = new Date();
+  if (option === 'yesterday') d.setDate(d.getDate() - 1);
+  if (option === 'tomorrow')  d.setDate(d.getDate() + 1);
+  document.getElementById('workDate').value = toISO(d);
+
+  clearErr('workDate');
+}
+
+/* ============================================================
+   VALIDATION HELPERS
+   ============================================================ */
+function setErr(id, msg) {
+  const ctrl = document.getElementById(id);
+  const err  = document.getElementById(id + '-err');
+  if (ctrl && ctrl.classList) ctrl.classList.add('input-error');
+  if (err) { err.querySelector('span').textContent = msg; err.classList.add('show'); }
+}
+
+function clearErr(id) {
+  const ctrl = document.getElementById(id);
+  const err  = document.getElementById(id + '-err');
+  if (ctrl && ctrl.classList) ctrl.classList.remove('input-error');
+  if (err) err.classList.remove('show');
+}
+
+/* ============================================================
+   SUBMIT WORK — full validation
+   ============================================================ */
+async function submitWork() {
+  // Clear all errors first
+  ['workDesc', 'workDate', 'workCost'].forEach(clearErr);
+
+  const desc = document.getElementById('workDesc').value.trim();
+  const date = document.getElementById('workDate').value;   // ISO string from hidden field
+  const cost = document.getElementById('workCost').value;
+
+  let valid = true;
+
+  /* 1. Description — required, min 10 chars */
+  if (!desc) {
+    setErr('workDesc', 'Work description is required.');
+    valid = false;
+  } else if (desc.length < 10) {
+    setErr('workDesc', 'Too short — please provide at least 10 characters.');
+    valid = false;
+  }
+
+  /* 2. Date — must be one of: yesterday, today, or tomorrow */
+  if (!date) {
+    setErr('workDate', 'Please select a completion date.');
+    valid = false;
+  } else {
+    const now  = new Date();
+
+    const yesterday = new Date(now); yesterday.setDate(now.getDate() - 1);
+    const today     = new Date(now);
+    const tomorrow  = new Date(now); tomorrow.setDate(now.getDate() + 1);
+
+    const allowedDates = [toISO(yesterday), toISO(today), toISO(tomorrow)];
+
+    if (!allowedDates.includes(date)) {
+      setErr('workDate', 'Date must be yesterday, today, or tomorrow only.');
+      valid = false;
+    }
+  }
+
+  /* 3. Cost — if entered, must be 0 or positive */
+  if (cost !== '' && cost !== undefined) {
+    const num = Number(cost);
+    if (isNaN(num) || num < 0) {
+      setErr('workCost', 'Please enter a valid amount (0 or above).');
+      valid = false;
+    }
+  }
+
+  if (!valid) return;
+
+  /* All valid — submit to API */
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+
+  try {
+    const res = await fetch(API + '/complete/' + currentJobId, {
+      method: 'PUT',
+      headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + token },
+      body: JSON.stringify({ workDescription: desc, workDate: date, cost: cost || 0 })
+    });
+    const data = await res.json();
+    console.log('Response:', data);
+    toast('Work submitted successfully!');
+    closeForm();
+    loadJobs();
+    loadCompleted();
+  } catch (err) {
+    console.error('Submit:', err);
+    toast('Error submitting work', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-circle-check"></i> Submit Work';
+  }
+}
+
+/* ============================================================
+   MODAL
+   ============================================================ */
+function openForm(id) {
+  currentJobId = id;
+  document.getElementById('workDesc').value = '';
+  document.getElementById('workCost').value = '';
+  ['workDesc','workDate','workCost'].forEach(clearErr);
+  selectDate('today');   // Always reset to today when opening
+  document.getElementById('workFormModal').classList.add('open');
+}
+
+function closeForm() {
+  document.getElementById('workFormModal').classList.remove('open');
+}
+
+document.getElementById('workFormModal').addEventListener('click', function(e) {
+  if (e.target === this) closeForm();
+});
+
+/* ============================================================
+   THEME
+   ============================================================ */
+function toggleTheme() {
+  const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  applyTheme(next);
+  localStorage.setItem('workerTheme', next);
+}
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  const dk = theme === 'dark';
+  document.getElementById('toggleIcon').textContent  = dk ? '🌙' : '☀️';
+  document.getElementById('toggleLabel').textContent = dk ? 'Dark' : 'Light';
+  if (chartInstance) loadEarningsChart(chartData, currentChartType);
+  if (donutInstance && allJobs.length)
+    loadDonutChart(allJobs.filter(j=>j.status==='assigned').length, allJobs.filter(j=>j.status==='completed').length);
+}
+
+function chartColors() {
+  const dk = document.documentElement.getAttribute('data-theme') === 'dark';
+  return {
+    grid: dk?'rgba(255,255,255,0.04)':'rgba(0,0,0,0.04)',
+    tick: dk?'#64748b':'#94a3b8',
+    tooltip: dk?'#1a2235':'#ffffff',
+    ttTitle: dk?'#94a3b8':'#475569',
+    ttBody:  dk?'#f1f5f9':'#0f172a',
+    border:  'rgba(37,99,235,0.15)',
+    donutBorder: dk?'#111827':'#ffffff',
+    legend: dk?'#94a3b8':'#64748b',
+  };
+}
+
+/* ============================================================
+   PAGE SWITCH
+   ============================================================ */
+function showPage(page, el) {
+  currentPage = page;
+  document.querySelectorAll('.nav-item').forEach(a=>a.classList.remove('active'));
+  if (el) el.classList.add('active');
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const t = document.getElementById(page+'Page');
+  if (t) t.classList.add('active');
+  const titles = {dashboard:'Dashboard',jobs:'Assigned Jobs',completed:'Completed Work',profile:'My Profile'};
+  document.getElementById('topbarTitle').textContent = titles[page]||page;
+  if (page==='dashboard') loadDashboard();
+  if (page==='jobs')      loadJobs();
+  if (page==='completed') loadCompleted();
+  if (page==='profile')   loadProfile();
+}
+
+function refreshCurrent() { showPage(currentPage); }
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+function toast(msg, type='success') {
+  const icons = {success:'fa-circle-check',error:'fa-circle-xmark'};
+  const el = document.createElement('div');
+  el.className = 'toast '+type;
+  el.innerHTML = `<i class="fas ${icons[type]||'fa-info'} toast-icon"></i><span class="toast-msg">${msg}</span>`;
+  document.getElementById('toastContainer').appendChild(el);
+  setTimeout(()=>{ if(el.parentNode) el.remove(); }, 3100);
+}
+
+/* ============================================================
+   API HELPER
+   ============================================================ */
+async function apiFetch(path, opts={}) {
+  const res = await fetch(API+path, {
+    ...opts,
+    headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json',...(opts.headers||{})}
+  });
+  if (!res.ok) throw new Error('HTTP '+res.status);
+  return res.json();
+}
+
+/* ============================================================
+   DASHBOARD
+   ============================================================ */
+async function loadDashboard() {
+  try {
+    const data = await apiFetch('/my-jobs');
+    allJobs = Array.isArray(data)?data:[];
+    const assigned  = allJobs.filter(j=>j.status==='assigned');
+    const completed = allJobs.filter(j=>j.status==='completed');
+    const earnings  = completed.reduce((s,j)=>s+Number(j.cost||0),0);
+    const rate      = allJobs.length?Math.round((completed.length/allJobs.length)*100):0;
+    document.getElementById('statAssigned').textContent  = assigned.length;
+    document.getElementById('statCompleted').textContent = completed.length;
+    document.getElementById('statEarnings').textContent  = '₹'+earnings.toLocaleString('en-IN');
+    document.getElementById('statRate').textContent      = rate+'%';
+    document.getElementById('jobsCount').textContent     = assigned.length;
+    loadEarningsChart(allJobs, currentChartType);
+    loadDonutChart(assigned.length, completed.length);
+    loadActivity(allJobs);
+  } catch(err) { console.error('Dashboard:',err); toast('Failed to load dashboard','error'); }
+}
+
+/* ============================================================
+   CHARTS
+   ============================================================ */
+function loadEarningsChart(data, type='line') {
+  chartData=data; currentChartType=type;
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const earn=new Array(12).fill(0);
+  data.filter(j=>j.status==='completed').forEach(j=>{ if(j.workDate&&j.cost) earn[new Date(j.workDate).getMonth()]+=Number(j.cost); });
+  const ctx=document.getElementById('earningsChart');
+  if(chartInstance) chartInstance.destroy();
+  const c=chartColors();
+  chartInstance=new Chart(ctx,{type,data:{labels:months,datasets:[{label:'Earnings ₹',data:earn,fill:type==='line',tension:0.45,borderColor:'#2563eb',backgroundColor:type==='line'?'rgba(37,99,235,0.07)':'rgba(37,99,235,0.65)',pointBackgroundColor:'#2563eb',pointRadius:type==='line'?4:0,borderWidth:2,borderRadius:type==='bar'?6:0}]},options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' ₹'+ctx.raw.toLocaleString('en-IN')},backgroundColor:c.tooltip,borderColor:c.border,borderWidth:1,titleColor:c.ttTitle,bodyColor:c.ttBody,padding:12,cornerRadius:10}},scales:{x:{grid:{color:c.grid},ticks:{color:c.tick,font:{family:'DM Sans',size:11}}},y:{grid:{color:c.grid},ticks:{color:c.tick,font:{family:'DM Sans',size:11},callback:v=>'₹'+v.toLocaleString('en-IN')}}}}});
+}
+
+function setChartType(type,el){
+  document.querySelectorAll('.chart-pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  loadEarningsChart(chartData,type);
+}
+
+function loadDonutChart(assigned,completed){
+  const ctx=document.getElementById('donutChart');
+  if(donutInstance) donutInstance.destroy();
+  const c=chartColors();
+  donutInstance=new Chart(ctx,{type:'doughnut',data:{labels:['Assigned','Completed'],datasets:[{data:[assigned,completed],backgroundColor:['rgba(37,99,235,0.8)','rgba(5,150,105,0.8)'],borderColor:[c.donutBorder,c.donutBorder],borderWidth:3,hoverOffset:6}]},options:{responsive:true,cutout:'72%',plugins:{legend:{position:'bottom',labels:{color:c.legend,font:{family:'DM Sans',size:12},padding:16,boxWidth:12,boxHeight:12,borderRadius:4}},tooltip:{backgroundColor:c.tooltip,borderColor:c.border,borderWidth:1,titleColor:c.ttTitle,bodyColor:c.ttBody,padding:12,cornerRadius:10}}}});
+}
+
+/* ============================================================
+   ACTIVITY
+   ============================================================ */
+function loadActivity(jobs){
+  const recent=jobs.slice().reverse().slice(0,5);
+  const icMap={completed:{cls:'success',icon:'fa-circle-check'},assigned:{cls:'blue',icon:'fa-briefcase'}};
+  const el=document.getElementById('activityList');
+  if(!recent.length){el.innerHTML='<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:13px">No activity yet</div>';return;}
+  el.innerHTML=recent.map(j=>{
+    const ic=icMap[j.status]||{cls:'warning',icon:'fa-clock'};
+    const date=j.workDate?new Date(j.workDate).toLocaleDateString('en-IN'):'Pending';
+    return `<div class="activity-item"><div class="activity-dot ${ic.cls}"><i class="fas ${ic.icon}"></i></div><div><div class="activity-text">${j.service||'Service Job'}</div><div class="activity-meta">${j.status==='completed'?'✅ Completed':'🔵 Assigned'} · ${date}</div></div></div>`;
+  }).join('');
+}
+
+/* ============================================================
+   JOBS
+   ============================================================ */
+async function loadJobs(){
+  const cont=document.getElementById('jobsList');
+  cont.innerHTML='<div style="padding:20px;color:var(--text-muted);font-size:13px">Loading...</div>';
+  try{
+    const data=await apiFetch('/my-jobs');
+    const assigned=(Array.isArray(data)?data:[]).filter(j=>j.status==='assigned');
+    document.getElementById('jobsSubtitle').textContent=`${assigned.length} active job${assigned.length!==1?'s':''} assigned to you`;
+    document.getElementById('jobsCount').textContent=assigned.length;
+    if(!assigned.length){cont.innerHTML=`<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">No assigned jobs</div><div class="empty-text">You're all caught up!</div></div>`;return;}
+    const prios=['high','medium','low'];
+    cont.innerHTML=assigned.map((j,i)=>{
+      const prio=prios[i%3];
+      const date=j.workDate?new Date(j.workDate).toLocaleDateString('en-IN'):'TBD';
+      const id=(j._id||'').slice(-6)||'------';
+      const name=j.userId?.name||'N/A';
+      const email=j.userId?.email||'N/A';
+      const phone=j.phone||j.userId?.phone||'N/A';
+      return `<div class="job-card"><div><div class="job-header"><span class="job-type-badge">${j.service||'Service'}</span><span class="priority-badge priority-${prio}">${prio}</span><span class="job-id">#${id}</span></div><div class="job-title">${j.problem||'No description'}</div><div class="contact-row"><div class="contact-item"><div class="contact-icon person"><i class="fas fa-user"></i></div><div><div class="contact-label">Client</div><div class="contact-value">${name}</div></div></div><div class="contact-item"><div class="contact-icon email"><i class="fas fa-envelope"></i></div><div><div class="contact-label">Email</div><div class="contact-value">${email}</div></div></div><div class="contact-item"><div class="contact-icon phone"><i class="fas fa-phone"></i></div><div><div class="contact-label">Phone</div><div class="contact-value phone-highlight">${phone}</div></div></div></div><div class="job-detail"><i class="fas fa-location-dot"></i> ${j.address||'Address not set'}</div><div class="job-detail"><i class="fas fa-calendar"></i> ${date}</div><div class="job-meta"><div class="job-tag"><i class="fas fa-circle" style="color:var(--warning);font-size:8px"></i> ${j.status}</div></div></div><div class="job-actions"><button class="btn-complete" onclick="openForm('${j._id}')"><i class="fas fa-check"></i> Mark Done</button></div></div>`;
+    }).join('');
+  }catch(err){console.error('Jobs:',err);cont.innerHTML=`<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-title">Failed to load jobs</div><div class="empty-text">Check your connection.</div></div>`;toast('Failed to load jobs','error');}
+}
+
+/* ============================================================
+   COMPLETED
+   ============================================================ */
+async function loadCompleted(){
+  const cont=document.getElementById('completedList');
+  cont.innerHTML='<div style="padding:20px;color:var(--text-muted);font-size:13px">Loading...</div>';
+  try{
+    const data=await apiFetch('/my-jobs');
+    const completed=(Array.isArray(data)?data:[]).filter(j=>j.status==='completed');
+    document.getElementById('completedSubtitle').textContent=`${completed.length} completed job${completed.length!==1?'s':''} total`;
+    document.getElementById('chipCompleted').textContent=completed.length+' completed';
+    if(!completed.length){cont.innerHTML=`<div class="empty-state"><div class="empty-icon">🏆</div><div class="empty-title">No completed jobs yet</div><div class="empty-text">Finished jobs will appear here.</div></div>`;return;}
+    cont.innerHTML=completed.map(j=>{
+      const date=j.workDate?new Date(j.workDate).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):'N/A';
+      const id=(j._id||'').slice(-6)||'------';
+      return `<div class="completed-card"><div class="completed-header"><div><div style="font-size:15px;font-weight:600;margin-bottom:4px;color:var(--text)">${j.service||'Service'}</div><div style="font-size:12px;color:var(--text-muted)">Job #${id} · ${date}</div></div><div style="text-align:right;flex-shrink:0"><div class="cost-highlight">₹${Number(j.cost||0).toLocaleString('en-IN')}</div><div class="completed-badge"><i class="fas fa-circle-check"></i> Completed</div></div></div><div class="completed-desc">${j.workDescription||'<em style="color:var(--text-muted)">No description provided</em>'}</div></div>`;
+    }).join('');
+  }catch(err){console.error('Completed:',err);toast('Failed to load completed jobs','error');}
+}
+
+/* ============================================================
+   PROFILE
+   ============================================================ */
+async function loadProfile(){
+  try{
+    const data=await apiFetch('/profile');
+    const initial=(data.name||'W')[0].toUpperCase();
+    document.getElementById('profileAvatar').textContent=initial;
+    document.getElementById('sidebarAvatar').textContent=initial;
+    document.getElementById('sidebarName').textContent=data.name||'Worker';
+    document.getElementById('sidebarRole').textContent=data.role||'Field Agent';
+    document.getElementById('profileName').textContent=data.name||'—';
+    document.getElementById('profileRoleText').textContent=data.role||'Field Worker';
+    document.getElementById('pfName').textContent=data.name||'—';
+    document.getElementById('pfEmail').textContent=data.email||'—';
+    document.getElementById('pfRole').textContent=data.role||'—';
+  }catch(err){console.error('Profile:',err);}
+}
+
+/* ============================================================
+   LOGOUT
+   ============================================================ */
+function logout(){ localStorage.clear(); location.href='login.html'; }
+</script>
+</body>
+</html>

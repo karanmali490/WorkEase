@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login - WorkEase</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+
+body {
+  min-height: 100vh;
+  background: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.card {
+  background: white;
+  border-radius: 14px;
+  padding: 40px 36px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  text-align: center;
+}
+
+.logo {
+  font-size: 22px;
+  font-weight: 700;
+  color: #ff6b00;
+  margin-bottom: 6px;
+}
+
+.logo span { color: #333; }
+
+.card h2 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #111;
+  margin-bottom: 6px;
+}
+
+.card p.sub {
+  color: #777;
+  font-size: 13px;
+  margin-bottom: 28px;
+}
+
+.input-group {
+  position: relative;
+  margin-bottom: 16px;
+  text-align: left;
+}
+
+.input-group i {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #aaa;
+  font-size: 1rem;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 12px 14px 12px 40px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: 'Poppins', sans-serif;
+  outline: none;
+  transition: 0.2s;
+  background: #fafafa;
+  color: #333;
+}
+
+.input-group input:focus {
+  border-color: #ff6b00;
+  background: #fff;
+}
+
+button {
+  width: 100%;
+  padding: 13px;
+  background: #ff6b00;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: 'Poppins', sans-serif;
+  cursor: pointer;
+  transition: 0.3s;
+  margin-top: 6px;
+}
+
+button:hover {
+  background: #e65c00;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(255,107,0,0.3);
+}
+
+.link {
+  display: block;
+  margin-top: 18px;
+  font-size: 13px;
+  color: #777;
+  cursor: pointer;
+}
+
+.link span {
+  color: #ff6b00;
+  font-weight: 600;
+}
+
+.link:hover span { text-decoration: underline; }
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 20px 0;
+  color: #ccc;
+  font-size: 12px;
+}
+
+.divider::before, .divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #e5e7eb;
+}
+
+.back-home {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #aaa;
+  font-size: 12px;
+  text-decoration: none;
+  margin-bottom: 24px;
+  transition: 0.2s;
+}
+
+.back-home:hover { color: #ff6b00; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="logo">Work<span>Ease</span></div>
+
+  <a href="index.html" class="back-home">
+    <i class="bi bi-arrow-left"></i> Back to Home
+  </a>
+
+  <h2>Welcome Back</h2>
+  <p class="sub">Login to your WorkEase account</p>
+
+  <div class="input-group">
+    <i class="bi bi-envelope"></i>
+    <input id="email" type="email" placeholder="Email Address">
+  </div>
+
+  <div class="input-group">
+    <i class="bi bi-lock"></i>
+    <input id="password" type="password" placeholder="Password">
+  </div>
+
+  <button onclick="login()">Login</button>
+
+  <div class="divider">or</div>
+
+  <span class="link" onclick="goSignup()">
+    Don't have an account? <span>Sign Up</span>
+  </span>
+</div>
+
+<script>
+const API = "http://localhost:5000/api/auth";
+
+async function login(){
+    const res = await fetch(API+"/login",{
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({
+            email: document.getElementById("email").value,
+            password: document.getElementById("password").value
+        })
+    });
+
+    const data = await res.json();
+
+    if(data.token){
+        localStorage.setItem("token", data.token);
+
+        if(data.role==="admin") location.href="admin.html";
+        else if(data.role==="worker") location.href="worker.html";
+        else location.href="user.html";
+    }else{
+        alert(data.message);
+    }
+}
+
+function goSignup(){
+    window.location.href = "signup.html";
+}
+</script>
+
+</body>
+</html>

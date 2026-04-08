@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Services - WorkEase</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+body{
+    margin:0;
+    font-family:'Poppins', sans-serif;
+    background:#f8f9fa;
+}
+
+/* SAME NAVBAR CSS */
+nav{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:20px 8%;
+    background:white;
+    box-shadow:0 2px 10px rgba(0,0,0,0.05);
+}
+
+.logo{
+    color:#ff6b00;
+    font-size:24px;
+    font-weight:700;
+}
+
+nav ul{
+    display:flex;
+    list-style:none;
+    gap:40px;
+    margin-left:auto;
+    margin-right:30px;
+}
+
+nav ul li a{
+    text-decoration:none;
+    color:#333;
+    font-weight:500;
+}
+
+nav ul li a:hover{
+    color:#ff6b00;
+}
+.btn{
+    padding:10px 20px;
+    background:#ff6b00;
+    color:white;
+    border:none;
+    border-radius:5px;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+.btn:hover{
+    background:#e65c00;
+}
+/* Services */
+.services{
+    padding:80px 8%;
+    text-align:center;
+}
+
+.box{
+    display:flex;
+    gap:30px;
+    margin-top:40px;
+}
+
+.card{
+    flex:1;
+    background:white;
+    padding:30px;
+    border-radius:10px;
+}
+
+</style>
+</head>
+
+<body>
+
+<nav>
+    <h2 class="logo">WorkEase</h2>
+    <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="#">Services</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="contact.html">Contact</a></li>
+    </ul>
+    <button class="btn" onclick="goToModules()">Get Started</button>
+</nav>
+
+<section class="services">
+    <h2>Our Services</h2>
+
+    <div class="box">
+        <div class="card"><h3>Electrician</h3></div>
+        <div class="card"><h3>Plumber</h3></div>
+        <div class="card"><h3>Cleaner</h3></div>
+    </div>
+</section>
+
+<script>
+function goToModules(){
+    window.location.href="login.html";
+}
+</script>
+
+</body>
+</html>

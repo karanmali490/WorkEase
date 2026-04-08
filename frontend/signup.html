@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Signup - WorkEase</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --orange: #ff6b00;
+  --orange-light: #fff3eb;
+  --orange-dim: #ffb380;
+  --green: #1aad6e;
+  --red: #d63031;
+  --bg: #f0ede8;
+  --card-bg: #ffffff;
+  --text: #1a1a1a;
+  --muted: #888;
+  --border: #e2ddd7;
+  --input-bg: #f9f7f5;
+  --shadow: 0 2px 32px rgba(0,0,0,0.10);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  min-height: 100vh;
+  background: var(--bg);
+  background-image:
+    radial-gradient(circle at 15% 20%, rgba(255,107,0,0.10) 0%, transparent 40%),
+    radial-gradient(circle at 85% 80%, rgba(255,107,0,0.07) 0%, transparent 40%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* ── Card ── */
+.card {
+  background: var(--card-bg);
+  border-radius: 24px;
+  padding: 44px 40px 40px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(255,107,0,0.08);
+  position: relative;
+  overflow: hidden;
+  animation: slideUp 0.5s cubic-bezier(0.22,1,0.36,1) both;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* orange accent bar on top */
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--orange), #ff9a45);
+  border-radius: 24px 24px 0 0;
+}
+
+/* ── Logo ── */
+.logo {
+  font-family: 'Syne', sans-serif;
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--orange);
+  letter-spacing: -0.5px;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.logo-dot {
+  width: 8px; height: 8px;
+  background: var(--orange);
+  border-radius: 50%;
+  display: inline-block;
+  margin-bottom: 3px;
+}
+
+.logo span { color: var(--text); }
+
+.card h2 {
+  font-family: 'Syne', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+  margin-top: 20px;
+  margin-bottom: 4px;
+  letter-spacing: -0.3px;
+}
+
+.card p.sub {
+  color: var(--muted);
+  font-size: 13px;
+  margin-bottom: 28px;
+  font-weight: 400;
+}
+
+/* ── Input Group ── */
+.input-group {
+  position: relative;
+  margin-bottom: 14px;
+  text-align: left;
+}
+
+.input-group label {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 6px;
+}
+
+.input-group > i.icon {
+  position: absolute;
+  left: 14px;
+  bottom: 13px;
+  color: #bbb;
+  font-size: 15px;
+  pointer-events: none;
+}
+
+.input-group input,
+.input-group select {
+  width: 100%;
+  padding: 12px 14px 12px 40px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: 'DM Sans', sans-serif;
+  outline: none;
+  background: var(--input-bg);
+  color: var(--text);
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.input-group input::placeholder { color: #bbb; }
+
+.input-group input:focus,
+.input-group select:focus {
+  border-color: var(--orange);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(255,107,0,0.10);
+}
+
+.input-group .chevron {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  color: #bbb;
+  font-size: 13px;
+  pointer-events: none;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 14px;
+  bottom: 13px;
+  cursor: pointer;
+  color: #bbb;
+  font-size: 15px;
+  transition: color 0.15s;
+}
+.toggle-password:hover { color: var(--orange); }
+
+/* ── Role Badge Selector ── */
+.role-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.role-btn {
+  padding: 12px 10px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  background: var(--input-bg);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s;
+}
+
+.role-btn i {
+  font-size: 20px;
+  color: #bbb;
+  transition: color 0.2s;
+}
+
+.role-btn span {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--muted);
+  transition: color 0.2s;
+}
+
+.role-btn.active {
+  border-color: var(--orange);
+  background: var(--orange-light);
+  box-shadow: 0 0 0 3px rgba(255,107,0,0.10);
+}
+
+.role-btn.active i,
+.role-btn.active span { color: var(--orange); }
+
+/* hidden select for form value */
+#role { display: none; }
+
+/* ── Worker extra fields ── */
+#workerFields {
+  display: none;
+  animation: fadeIn 0.3s ease both;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Phone wrap ── */
+.phone-wrap {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  background: var(--input-bg);
+  overflow: hidden;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+
+.phone-wrap:focus-within {
+  border-color: var(--orange);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(255,107,0,0.10);
+}
+
+.phone-wrap.valid   { border-color: var(--green); background:#fff; box-shadow: 0 0 0 3px rgba(26,173,110,0.10); }
+.phone-wrap.invalid { border-color: var(--red);   background:#fff; box-shadow: 0 0 0 3px rgba(214,48,49,0.10); }
+
+.phone-prefix {
+  padding: 0 12px 0 14px;
+  font-size: 13px;
+  color: #888;
+  border-right: 1.5px solid var(--border);
+  height: 46px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-weight: 500;
+  background: #f3f0ec;
+}
+
+.phone-wrap input {
+  flex: 1;
+  padding: 12px 10px !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  outline: none;
+  font-size: 14px;
+  background: transparent !important;
+  font-family: 'DM Sans', sans-serif;
+  letter-spacing: 0.5px;
+  color: var(--text);
+}
+
+.phone-wrap input::placeholder { color: #bbb; }
+
+.phone-status-icon {
+  padding: 0 13px;
+  font-size: 16px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.phone-hint {
+  font-size: 11px;
+  margin-top: 5px;
+  color: var(--muted);
+  min-height: 16px;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 2px;
+}
+
+.phone-hint.ok  { color: var(--green); }
+.phone-hint.err { color: var(--red); }
+
+/* ── Divider ── */
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 6px 0 16px;
+}
+
+/* ── Sign Up Button ── */
+button#signupBtn {
+  width: 100%;
+  padding: 14px;
+  background: var(--orange);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 15px;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  margin-top: 6px;
+  letter-spacing: 0.2px;
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+  box-shadow: 0 4px 14px rgba(255,107,0,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+button#signupBtn:hover:not(:disabled) {
+  background: #e85f00;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(255,107,0,0.30);
+}
+
+button#signupBtn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+button#signupBtn:disabled {
+  background: var(--orange-dim);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ── Login Link ── */
+.login-link {
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 18px;
+}
+
+.login-link a {
+  color: var(--orange);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.login-link a:hover { text-decoration: underline; }
+
+/* ── Toast Popup ── */
+#popup {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 13px 18px 13px 14px;
+  border-radius: 10px;
+  font-size: 13.5px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  opacity: 0;
+  transform: translateX(20px);
+  transition: opacity 0.3s, transform 0.3s;
+  z-index: 999;
+  background: #1a1a1a;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  max-width: 280px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.18);
+}
+
+#popup.show { opacity: 1; transform: translateX(0); }
+#popup.error   { background: var(--red); }
+#popup.success { background: var(--green); }
+
+/* ── Spinner ── */
+.spinner {
+  width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+  .card { padding: 36px 24px 30px; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+  <!-- Logo -->
+  <div class="logo">
+    <span class="logo-dot"></span>
+    Work<span>Ease</span>
+  </div>
+
+  <h2>Create Account</h2>
+  <p class="sub">Join WorkEase and get started today</p>
+
+  <!-- Name -->
+  <div class="input-group">
+    <label>Full Name</label>
+    <i class="bi bi-person icon"></i>
+    <input id="name" type="text" placeholder="John Doe">
+  </div>
+
+  <!-- Email -->
+  <div class="input-group">
+    <label>Email Address</label>
+    <i class="bi bi-envelope icon"></i>
+    <input id="email" type="email" placeholder="you@gmail.com">
+  </div>
+
+  <!-- Password -->
+  <div class="input-group">
+    <label>Password</label>
+    <i class="bi bi-lock icon"></i>
+    <input id="password" type="password" placeholder="Min. 6 characters">
+    <i class="bi bi-eye-slash toggle-password" onclick="togglePassword('password', this)"></i>
+  </div>
+
+  <!-- Confirm Password -->
+  <div class="input-group">
+    <label>Confirm Password</label>
+    <i class="bi bi-lock icon"></i>
+    <input id="confirmPassword" type="password" placeholder="Re-enter password">
+    <i class="bi bi-eye-slash toggle-password" onclick="togglePassword('confirmPassword', this)"></i>
+  </div>
+
+  <!-- Role selector -->
+  <div class="input-group">
+    <label>I am a</label>
+    <select id="role"></select>
+    <div class="role-selector">
+      <div class="role-btn active" id="btnUser" onclick="selectRole('user')">
+        <i class="bi bi-person-circle"></i>
+        <span>User</span>
+      </div>
+      <div class="role-btn" id="btnWorker" onclick="selectRole('worker')">
+        <i class="bi bi-tools"></i>
+        <span>Worker</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Worker-only fields -->
+  <div id="workerFields">
+    <div class="divider"></div>
+
+    <!-- Service -->
+    <div class="input-group">
+      <label>Service Type</label>
+      <i class="bi bi-briefcase icon"></i>
+      <select id="service">
+        <option value="" disabled selected>Select your service</option>
+        <option>Electrician</option>
+        <option>Plumber</option>
+        <option>Cleaner</option>
+        <option>Carpenter</option>
+        <option>AC Technician</option>
+      </select>
+      <i class="bi bi-chevron-down chevron"></i>
+    </div>
+
+    <!-- Phone -->
+    <div class="input-group">
+      <label>Phone Number</label>
+      <div class="phone-wrap" id="phoneWrap">
+        <div class="phone-prefix">
+          <span>🇮🇳</span>
+          <span>+91</span>
+        </div>
+        <input
+          id="phone"
+          type="tel"
+          maxlength="10"
+          placeholder="98765 43210"
+          oninput="livePhoneValidate(this)"
+          onkeypress="return /[0-9]/.test(event.key)"
+        >
+        <span id="phoneIcon" class="phone-status-icon"></span>
+      </div>
+      <div class="phone-hint" id="phoneHint">
+        <span id="phoneHintText">Enter 10-digit mobile number</span>
+        <span id="phoneCount">0 / 10</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Submit -->
+  <button id="signupBtn" onclick="register()">
+    <span id="btnText">Create Account</span>
+  </button>
+
+  <p class="login-link">Already have an account? <a href="login.html">Sign in</a></p>
+</div>
+
+<div id="popup"></div>
+
+<script>
+const API = "http://localhost:5000/api/auth";
+
+/* ── Role toggle ── */
+let currentRole = 'user';
+
+function selectRole(role) {
+  currentRole = role;
+  document.getElementById('role').value = role;
+
+  document.getElementById('btnUser').classList.toggle('active', role === 'user');
+  document.getElementById('btnWorker').classList.toggle('active', role === 'worker');
+
+  const wf = document.getElementById('workerFields');
+  if (role === 'worker') {
+    wf.style.display = 'block';
+  } else {
+    wf.style.display = 'none';
+    resetPhone();
+  }
+}
+
+/* ── Live phone validation ── */
+function livePhoneValidate(input) {
+  input.value = input.value.replace(/\D/g, '');
+  const val   = input.value;
+  const wrap  = document.getElementById('phoneWrap');
+  const hint  = document.getElementById('phoneHint');
+  const text  = document.getElementById('phoneHintText');
+  const icon  = document.getElementById('phoneIcon');
+  const count = document.getElementById('phoneCount');
+
+  count.textContent = val.length + ' / 10';
+
+  if (val.length === 0) {
+    wrap.className = 'phone-wrap';
+    icon.innerHTML = '';
+    hint.className = 'phone-hint';
+    text.textContent = 'Enter 10-digit mobile number';
+    return;
+  }
+
+  if (!/^[6-9]/.test(val)) {
+    wrap.className = 'phone-wrap invalid';
+    icon.innerHTML = '<i class="bi bi-x-circle-fill" style="color:var(--red)"></i>';
+    hint.className = 'phone-hint err';
+    text.textContent = 'Must start with 6, 7, 8, or 9';
+    return;
+  }
+
+  if (val.length < 10) {
+    wrap.className = 'phone-wrap';
+    icon.innerHTML = '';
+    hint.className = 'phone-hint';
+    text.textContent = val.length >= 5 ? 'Almost there…' : 'Keep typing…';
+    return;
+  }
+
+  wrap.className = 'phone-wrap valid';
+  icon.innerHTML = '<i class="bi bi-check-circle-fill" style="color:var(--green)"></i>';
+  hint.className = 'phone-hint ok';
+  text.textContent = 'Looks good!';
+}
+
+function resetPhone() {
+  document.getElementById('phone').value = '';
+  document.getElementById('phoneWrap').className = 'phone-wrap';
+  document.getElementById('phoneIcon').innerHTML = '';
+  document.getElementById('phoneHint').className = 'phone-hint';
+  document.getElementById('phoneHintText').textContent = 'Enter 10-digit mobile number';
+  document.getElementById('phoneCount').textContent = '0 / 10';
+}
+
+/* ── Password toggle ── */
+function togglePassword(id, iconEl) {
+  const input = document.getElementById(id);
+  input.type = input.type === 'password' ? 'text' : 'password';
+  iconEl.classList.toggle('bi-eye');
+  iconEl.classList.toggle('bi-eye-slash');
+}
+
+/* ── Toast ── */
+function showPopup(msg, type = 'error') {
+  const icons = { error: 'bi-exclamation-circle', success: 'bi-check-circle' };
+  const p = document.getElementById('popup');
+  p.innerHTML = `<i class="bi ${icons[type] || 'bi-info-circle'}"></i> ${msg}`;
+  p.className = 'show ' + type;
+  setTimeout(() => p.className = '', 2800);
+}
+
+/* ── Cache elements ── */
+const nameEl            = document.getElementById('name');
+const emailEl           = document.getElementById('email');
+const passwordEl        = document.getElementById('password');
+const confirmPasswordEl = document.getElementById('confirmPassword');
+const serviceEl         = document.getElementById('service');
+const phoneEl           = document.getElementById('phone');
+
+/* ── Validate ── */
+function validateForm() {
+  const name     = nameEl.value.trim();
+  const email    = emailEl.value.trim();
+  const password = passwordEl.value;
+  const confirm  = confirmPasswordEl.value;
+  const service  = serviceEl.value;
+  const phone    = phoneEl.value.trim();
+
+  if (name.length < 3)
+    return showPopup('Name must be at least 3 characters'), false;
+
+  if (!/^[^@]+@gmail\.com$/.test(email))
+    return showPopup('Only Gmail addresses are allowed'), false;
+
+  if (password.length < 6)
+    return showPopup('Password must be at least 6 characters'), false;
+
+  if (password !== confirm)
+    return showPopup('Passwords do not match'), false;
+
+  if (currentRole === 'worker') {
+    if (!service)
+      return showPopup('Please select a service type'), false;
+
+    if (!/^[6-9][0-9]{9}$/.test(phone))
+      return showPopup('Enter a valid 10-digit phone number'), false;
+  }
+
+  return true;
+}
+
+/* ── Register ── */
+async function register() {
+  if (!validateForm()) return;
+
+  const btn     = document.getElementById('signupBtn');
+  const btnText = document.getElementById('btnText');
+
+  btn.disabled = true;
+  btnText.textContent = 'Creating account…';
+  btn.insertAdjacentHTML('afterbegin', '<span class="spinner"></span>');
+
+  try {
+    const res = await fetch(API + '/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name:     nameEl.value.trim(),
+        email:    emailEl.value.trim(),
+        password: passwordEl.value,
+        role:     currentRole,
+        service:  serviceEl.value || null,
+        phone:    currentRole === 'worker' ? phoneEl.value : null
+      })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      showPopup(data.message || 'Something went wrong');
+      btn.disabled = false;
+      btnText.textContent = 'Create Account';
+      btn.querySelector('.spinner')?.remove();
+      return;
+    }
+
+    showPopup('Account created successfully! 🎉', 'success');
+    setTimeout(() => location.href = 'login.html', 1600);
+
+  } catch {
+    showPopup('Server error. Please try again.');
+    btn.disabled = false;
+    btnText.textContent = 'Create Account';
+    btn.querySelector('.spinner')?.remove();
+  }
+}
+</script>
+
+</body>
+</html>
